@@ -12,18 +12,10 @@ public class SwordAndShield : Weapons
         weaponName = "Sword and Shield";
     }
 
-    public void ShieldBash(bool isPlayer)
+    public void ShieldBash()
     {
-        if(isPlayer)
-        {
-            gameManager.enemyPositions[0].GetComponentInChildren<Enemy>().takeDamage(shieldBash.damage + damage + character.strength);
-            character.hasAttacked = true;
-        }
-        else
-        {
-            gameManager.playerPositions[0].GetComponentInChildren<Knight>().takeDamage(shieldBash.damage + damage + character.strength);
-        }
-
+        gameManager.enemyPositions[0].GetComponentInChildren<Enemy>().takeDamage(shieldBash.damage + damage + character.strength);
+        character.hasAttacked = true;
     }
     void Start()
     {
