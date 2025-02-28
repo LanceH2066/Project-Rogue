@@ -1,83 +1,87 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;
+
+public enum BattleState {START, PLAYERTURN, ENEMYTURN, WIN, LOSE}
 
 public class GameManager : MonoBehaviour
 {
-    public List<Position> playerPositions = new List<Position>();
-    public List<Position> enemyPositions = new List<Position>();
-    public Knight knight;
-    public Knight knight1;
-    public Knight knight2;
-    public Knight knight3;
-
-    public Enemy enemy;
-    public Enemy enemy1;
-    public Enemy enemy2;
-    public Enemy enemy3;
-    public List<CharacterZero> turnOrder = new List<CharacterZero>();
-    public enum GameState
-    {
-        PlayerTurn,
-        EnemyTurn,
-        Win,
-        Lose
-    }
-
-    public GameState currentState;
-    private int currentTurnIndex = 0;
+    public GameObject playerPrefab;     // Player Character Prefabs
+    public GameObject enemyPrefab;      // Enemy Character Prefabs
+    public List<Transform> playerBattleStations;    // Player Battle Stations
+    public List<Transform> enemyBattleStations;     // Enemy Battle Stations
+    public List<Unit> playerCharacters = new List<Unit>();  // List of Player Characters In Scene
+    public List<Unit> enemyCharacters = new List<Unit>();   // List of Enemy Characters In Scene
+    public List<Unit> turnOrder = new List<Unit>();     // Turn Order List
+    public BattleState currentState;                // Current Battle State
+    private int currentTurnIndex = 0;           // Current Turn Index
 
     void Start()
     {
-        // Enable ui
-        //new Knight[] { knight, knight1, knight2, knight3 };
-        // Randomize Turn Order
-        foreach (Knight knight in new Knight[] { knight, knight1, knight2, knight3 })
+        currentState = BattleState.START;
+        SetupBattle();
+    }   
+
+    private void SetupBattle()      // Spawn Units & Set Turn Order, Start Game Loop
+    {
+        // Spawn Units
+        foreach(Transform playerBattleStation in playerBattleStations)
         {
-            knight.initiative = Random.Range(1, 20) + knight.speed;
-            turnOrder.Add(knight);
+            GameObject playerGO = Instantiate(playerPrefab, playerBattleStation);
+            playerCharacters.Add(playerGO.GetComponent<Unit>());
         }
-        foreach (Enemy enemy in new Enemy[] { enemy, enemy1, enemy2, enemy3 })
+        foreach(Transform enemyBattleStation in enemyBattleStations)
         {
-            enemy.initiative = Random.Range(1, 20) + enemy.speed;
-            turnOrder.Add(enemy);
+            GameObject enemyGO = Instantiate(enemyPrefab, enemyBattleStation);
+            enemyCharacters.Add(enemyGO.GetComponent<Unit>());
+        }
+        // Set Turn Order
+        foreach (Unit playerCharacter in playerCharacters)
+        {
+            playerCharacter.initiative = Random.Range(1, 20) + playerCharacter.speed;
+            turnOrder.Add(playerCharacter);
+        }
+        foreach (Unit enemyCharacter in enemyCharacters)
+        {
+            enemyCharacter.initiative = Random.Range(1, 20) + enemyCharacter.speed;
+            turnOrder.Add(enemyCharacter);
         }
         turnOrder.Sort((x, y) => y.initiative.CompareTo(x.initiative));
 
+        // Start Battle
         StartCoroutine(GameLoop());
-    }   
+    }
 
     IEnumerator GameLoop()
     {
-        while (currentState != GameState.Win && currentState != GameState.Lose)
+        while (currentState != BattleState.WIN && currentState != BattleState.LOSE)
         {
-            CharacterZero currentCharacter = turnOrder[currentTurnIndex];
-            currentCharacter.SetCanvasVisibility(true);
+            Unit currentCharacter = turnOrder[currentTurnIndex];
+            currentCharacter.SetCanvasVisibility(true);         // Activate Current Character UI
 
-            if (currentCharacter is Knight)
+            if(playerCharacters.Contains(currentCharacter)) // Start Player Turn
             {
-                currentState = GameState.PlayerTurn;
+                currentState = BattleState.PLAYERTURN;
                 yield return StartCoroutine(PlayerTurn());
             }
-            else if (currentCharacter is Enemy)
+            else if(enemyCharacters.Contains(currentCharacter)) // Start Enemy Turn
             {
-                currentState = GameState.EnemyTurn;
+                currentState = BattleState.ENEMYTURN;
                 yield return StartCoroutine(EnemyTurn());
             }
 
-            currentCharacter.SetCanvasVisibility(false);
-            currentTurnIndex = (currentTurnIndex + 1) % turnOrder.Count;
+            currentCharacter.SetCanvasVisibility(false);    // De-activate Current Character UI
+            currentTurnIndex = (currentTurnIndex + 1) % turnOrder.Count;    // Next Turn
         }
     }
 
     IEnumerator PlayerTurn()
     {
-        CharacterZero currentCharacter = turnOrder[currentTurnIndex];
+        Unit currentCharacter = turnOrder[currentTurnIndex];
         currentCharacter.hasAttacked = false;
         Debug.Log(currentCharacter.gameObject.name + " Turn");
 
-        while (!currentCharacter.hasAttacked)
+        while(!currentCharacter.hasAttacked)
         {
             yield return null;
         }
@@ -85,19 +89,23 @@ public class GameManager : MonoBehaviour
 
     IEnumerator EnemyTurn()
     {
-        CharacterZero currentEnemy = turnOrder[currentTurnIndex];
-        currentEnemy.hasAttacked = false;
-        Debug.Log(currentEnemy.gameObject.name + " Turn");
-
-        enemyAttack();
-
+        EnemyAttack();
         yield return new WaitForSeconds(3f);
     }
 
-    public void enemyAttack()
+    public void PlayerAttack(Unit target)
     {
-        int target = Random.Range(0, 3);
-        playerPositions[target].GetComponentInChildren<CharacterZero>().takeDamage(10);
+        Unit currentCharacter = turnOrder[currentTurnIndex];
+        currentCharacter.Attack(target);
+        currentCharacter.hasAttacked = true;
     }
 
+    public void EnemyAttack()
+    {
+        int target = Random.Range(0, playerCharacters.Count);
+        Unit targetCharacter = playerCharacters[target];
+        Unit currentCharacter = turnOrder[currentTurnIndex];
+        currentCharacter.Attack(targetCharacter);
+        currentCharacter.hasAttacked = true;
+    }
 }

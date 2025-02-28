@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GreatSword : Weapons
+public class GreatSword : Weapon
 {
     public GreatSword()
     {
@@ -8,14 +8,6 @@ public class GreatSword : Weapons
         weaponName = "Great Sword";
     }
     public void GreatSwordAttack()
-    {
-        
-    }
-    void Start()
-    {
-        
-    }
-    void Update()
     {
         
     }

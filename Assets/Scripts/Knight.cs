@@ -1,9 +1,11 @@
 using UnityEngine;
 
-public class Knight : CharacterZero
+public class Knight : Unit
 {
         public Knight()
         {
+            level = 1;
+            characterName = "Knight";
             maxHP = 100;
             currentHP = 100;
             strength = 10;

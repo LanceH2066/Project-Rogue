@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class CharacterZero : MonoBehaviour
+public class Unit : MonoBehaviour
 {
+    public int level;
+    public string characterName;
     public float maxHP;
     public float currentHP;
     public int strength;
@@ -13,10 +15,10 @@ public class CharacterZero : MonoBehaviour
     public int initiative;
     public bool hasAttacked;
     public GameObject canvas;
-    public Weapons weapon;
+    public Weapon weapon;
     void Awake()
     {
-        weapon = GetComponentInChildren<Weapons>();
+        weapon = GetComponentInChildren<Weapon>();
     }
     public void SetCanvasVisibility(bool isVisible)
     {
@@ -41,5 +43,21 @@ public class CharacterZero : MonoBehaviour
         currentHP -= damage;
         Debug.Log(gameObject.name + " Was Hit, Damage Taken: " + damage + "Remaining HP: " + currentHP);
     }
+    public void Attack(Unit target)
+    {
+        if (weapon != null)
+        {
+            weapon.Attack(target);
+        }
+        else
+        {
+            Debug.LogWarning(characterName + " has no weapon equipped!");
+        }
+    }
 
+    public void SwapWeapon(Weapon newWeapon)
+    {
+        weapon = newWeapon;
+        Debug.Log(characterName + " swapped to " + newWeapon.weaponName);
+    }
 }

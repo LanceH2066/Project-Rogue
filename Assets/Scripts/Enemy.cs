@@ -1,9 +1,11 @@
 using UnityEngine;
 
-public class Enemy : CharacterZero
+public class Enemy : Unit
 {
         public Enemy()
         {
+            level = 1;
+            characterName = "Enemy";
             maxHP = 100;
             currentHP = 100;
             strength = 10;
