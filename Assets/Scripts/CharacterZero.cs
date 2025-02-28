@@ -11,7 +11,20 @@ public class CharacterZero : MonoBehaviour
     public int dexterity;
     public int intelligence;
     public int initiative;
-
+    public bool hasAttacked;
+    public GameObject canvas;
+    public Weapons weapon;
+    void Awake()
+    {
+        weapon = GetComponentInChildren<Weapons>();
+    }
+    public void SetCanvasVisibility(bool isVisible)
+    {
+        if (canvas != null)
+        {
+            canvas.SetActive(isVisible);
+        }
+    }
     public void displaySats()
     {
         Debug.Log("maxHP: " + maxHP);
@@ -26,10 +39,7 @@ public class CharacterZero : MonoBehaviour
     public void takeDamage(float damage)
     {
         currentHP -= damage;
-        Debug.Log("Damage Taken: " + damage + "Remaining HP: " + currentHP);
-
-        if(currentHP < 0) currentHP = 0;
-        Debug.Log("Remaining HP: " + currentHP);
+        Debug.Log(gameObject.name + " Was Hit, Damage Taken: " + damage + "Remaining HP: " + currentHP);
     }
 
 }
