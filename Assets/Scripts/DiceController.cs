@@ -20,12 +20,6 @@ public class DiceController : MonoBehaviour
 
     void Update()
     {
-        if (transform.position.z < mainCamera.transform.position.z + 3f)
-        {
-            Vector3 clampedPos = transform.position;
-            clampedPos.z = mainCamera.transform.position.z + 3f;
-            transform.position = clampedPos;
-        }
         
         if(!diceThrown)
         {
