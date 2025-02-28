@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    public List<Position> playerPositions = new List<Position>();
+    public List<Position> enemyPositions = new List<Position>();
     public Knight knight;
     public Knight knight1;
     public Knight knight2;
@@ -23,6 +26,7 @@ public class GameManager : MonoBehaviour
     }
 
     public GameState currentState;
+    private int currentTurnIndex = 0;
 
     void Start()
     {
@@ -40,10 +44,6 @@ public class GameManager : MonoBehaviour
             turnOrder.Add(enemy);
         }
         turnOrder.Sort((x, y) => y.initiative.CompareTo(x.initiative));
-        foreach (CharacterZero character in turnOrder)
-        {
-            Debug.Log(character.gameObject.name + ": " + character.initiative);
-        }
 
         StartCoroutine(GameLoop());
     }   
@@ -52,82 +52,52 @@ public class GameManager : MonoBehaviour
     {
         while (currentState != GameState.Win && currentState != GameState.Lose)
         {
-            switch (currentState)
+            CharacterZero currentCharacter = turnOrder[currentTurnIndex];
+            currentCharacter.SetCanvasVisibility(true);
+
+            if (currentCharacter is Knight)
             {
-                case GameState.PlayerTurn:
-                    yield return StartCoroutine(PlayerTurn());
-                    break;
-                case GameState.EnemyTurn:
-                    yield return StartCoroutine(EnemyTurn());
-                    break;
+                currentState = GameState.PlayerTurn;
+                yield return StartCoroutine(PlayerTurn());
             }
+            else if (currentCharacter is Enemy)
+            {
+                currentState = GameState.EnemyTurn;
+                yield return StartCoroutine(EnemyTurn());
+            }
+
+            currentCharacter.SetCanvasVisibility(false);
+            currentTurnIndex = (currentTurnIndex + 1) % turnOrder.Count;
         }
     }
 
     IEnumerator PlayerTurn()
     {
-        Debug.Log("Player Turn");
+        CharacterZero currentCharacter = turnOrder[currentTurnIndex];
+        currentCharacter.hasAttacked = false;
+        Debug.Log(currentCharacter.gameObject.name + " Turn");
 
-        // Wait for player input (e.g., attack button click)
-        while (!Input.GetButtonDown("Fire1"))
+        while (!currentCharacter.hasAttacked)
         {
             yield return null;
-        }
-
-        // Perform player actions
-        attackButtonClicked();
-
-        // Check for win condition
-        if (CheckWinCondition())
-        {
-            currentState = GameState.Win;
-        }
-        else
-        {
-            currentState = GameState.EnemyTurn;
         }
     }
 
     IEnumerator EnemyTurn()
     {
-        Debug.Log("Enemy Turn");
+        CharacterZero currentEnemy = turnOrder[currentTurnIndex];
+        currentEnemy.hasAttacked = false;
+        Debug.Log(currentEnemy.gameObject.name + " Turn");
 
-        // Perform enemy actions
         enemyAttack();
 
-        // Check for lose condition
-        if (CheckLoseCondition())
-        {
-            currentState = GameState.Lose;
-        }
-        else
-        {
-            currentState = GameState.PlayerTurn;
-        }
-
-        yield return null;
-    }
-
-    public void attackButtonClicked()
-    {
-        enemy.takeDamage(10);
+        yield return new WaitForSeconds(3f);
     }
 
     public void enemyAttack()
     {
-        int target = Random.Range(1, 4);
-        knight.takeDamage(10);
+        int target = Random.Range(0, 3);
+        playerPositions[target].GetComponentInChildren<CharacterZero>().takeDamage(10);
     }
 
-    bool CheckWinCondition()
-    {
-        // Implement win condition check
-        return false;
-    }
-
-    bool CheckLoseCondition()
-    {
-        // Implement lose condition check
-        return false;
-    }
 }

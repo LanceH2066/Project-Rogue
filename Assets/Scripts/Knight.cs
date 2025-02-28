@@ -12,6 +12,7 @@ public class Knight : CharacterZero
             resourceName = "Rage";
             dexterity = 5;
             intelligence = 3;
+            hasAttacked = false;
         }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
