@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class Knight : CharacterZero
 {
-
         public Knight()
         {
             maxHP = 100;
